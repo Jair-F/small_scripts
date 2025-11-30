@@ -1,4 +1,3 @@
-
 ## Antivirus transfer
 <details>
   <summary>Linux</summary>
@@ -11,6 +10,15 @@
     ```bash
     curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/remove_data.sh | bash
     ```
+
+    <details>
+    <summary>Linux with arguments</summary>
+
+    - add_data:
+        ```bash
+        curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/add_data.sh | bash -s example_file.bin [4]
+        ```
+    </details>
 </details>
 
 <details>
