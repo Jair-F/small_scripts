@@ -3,11 +3,11 @@
   <summary>Linux</summary>
 
   - add_data:
-    ```bash
+    ```sh
     curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/add_data.sh | bash
     ```
   - remove_data:
-    ```bash
+    ```sh
     curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/remove_data.sh | bash
     ```
 
@@ -15,7 +15,7 @@
     <summary>Linux with arguments</summary>
 
     - add_data:
-        ```bash
+        ```sh
         curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/add_data.sh | bash -s example_file.bin 4
         ```
     </details>
