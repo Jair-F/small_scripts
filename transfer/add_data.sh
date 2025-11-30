@@ -2,13 +2,21 @@
 
 TEMP_FILE="/tmp/tmp_random_data.bin"
 
-echo -n "Input File: "
-read INPUT_FILE
+if [ -z "$1" ]; then
+    echo -n "Input File: "
+    read INPUT_FILE
 
-echo -n "Num of KB to add(empty=4): "
-read NUM_OF_KBYTES
+    echo -n "Num of KB to add(empty=4): "
+    read NUM_OF_KBYTES
+else
+    INPUT_FILE=$1
+    NUM_OF_KBYTES=$2
+fi
+
 if [ -z "$NUM_OF_KBYTES" ]; then
     NUM_OF_KBYTES="4"
+
+    echo "going with default bytes to add: $NUM_OF_KBYTES kb"
 fi
 
 # removing trailing and leading ', "
