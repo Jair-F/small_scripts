@@ -4,10 +4,10 @@ TEMP_FILE="/tmp/tmp_random_data.bin"
 
 if [ -z "$1" ]; then
     echo -n "Input File: "
-    read INPUT_FILE
+    read INPUT_FILE < /dev/tty
 
     echo -n "Num of KB to add(empty=4): "
-    read NUM_OF_KBYTES
+    read NUM_OF_KBYTES < /dev/tty
 else
     INPUT_FILE=$1
     NUM_OF_KBYTES=$2
