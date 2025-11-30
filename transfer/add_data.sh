@@ -15,7 +15,6 @@ fi
 
 if [ -z "$NUM_OF_KBYTES" ]; then
     NUM_OF_KBYTES="4"
-
     echo "going with default bytes to add: $NUM_OF_KBYTES kb"
 fi
 
