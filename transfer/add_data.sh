@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "Argument 1: $1"
+echo "Argument 2: $2"
+
 TEMP_FILE="/tmp/tmp_random_data.bin"
 
 if [ -z "$1" ]; then
