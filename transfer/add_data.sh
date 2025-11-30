@@ -16,6 +16,8 @@ fi
 if [ -z "$NUM_OF_KBYTES" ]; then
     NUM_OF_KBYTES="4"
     echo "going with default bytes to add: $NUM_OF_KBYTES kb"
+else
+    echo "set bytes to add to : $NUM_OF_KBYTES kb"
 fi
 
 # removing trailing and leading ', "
