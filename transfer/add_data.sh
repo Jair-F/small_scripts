@@ -32,5 +32,5 @@ OUTPUT_FILE="$INPUT_FILE.bin"
 touch /tmp/tmp_random_data.bin
 
 dd if=/dev/urandom of=$TEMP_FILE bs=1K count=$NUM_OF_KBYTES
-cat $TEMP_FILE $orig_file > $OUTPUT_FILE
+cat $TEMP_FILE $INPUT_FILE > $OUTPUT_FILE
 rm $TEMP_FILE
