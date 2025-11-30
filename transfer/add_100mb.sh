@@ -1,13 +1,24 @@
 #!/bin/bash
 
-echo "filename: "
-read orig_file
-echo "output_file: "
-read out_file
+TEMP_FILE="/tmp/tmp_random_data.bin"
+
+echo -n "Input File: "
+read INPUT_FILE
+
+echo -n "Num of KB to add(empty=4): "
+read NUM_OF_KBYTES
+if [ -z "$NUM_OF_KBYTES" ]; then
+    NUM_OF_KBYTES="4"
+fi
+
+# removing trailing and leading ', "
+INPUT_FILE="${INPUT_FILE//\"/}"
+INPUT_FILE="${INPUT_FILE//\'/}"
+
+OUTPUT_FILE="$INPUT_FILE.bin"
 
 touch /tmp/tmp_random_data.bin
 
-dd if=/dev/urandom of=/tmp/tmp_random_data.bin bs=1M count=100
-cat /tmp/tmp_random_data.bin $orig_file > /tmp/new_file
-rm /tmp/tmp_random_data.bin
-mv /tmp/new_file $out_file
+dd if=/dev/urandom of=$TEMP_FILE bs=1K count=$NUM_OF_KBYTES
+cat $TEMP_FILE $orig_file > $OUTPUT_FILE
+rm $TEMP_FILE
