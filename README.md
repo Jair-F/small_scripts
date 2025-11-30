@@ -16,7 +16,7 @@
 
     - add_data:
         ```bash
-        curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/add_data.sh | bash -s example_file.bin [4]
+        curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/add_data.sh | bash -s example_file.bin 4
         ```
     </details>
 </details>
