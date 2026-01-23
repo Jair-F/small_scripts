@@ -3,7 +3,7 @@ local TUNNEL_PAYLOAD_CUSTOM_ID = 40002
 local TARGET_SYSTEM = param:get("MAV_GCS_SYSID") -- gcs Station
 local TARGET_COMPONENT = param:get("MAV_SYSID") -- autopilot
 local MAV_TUNNEL_MSG_ID = 385 -- https://mavlink.io/en/messages/common.html#TUNNEL
-local LOOP_RATE = 100
+local LOOP_RATE = 20
 
 
 local function send_tunnel_msg(mav_channel, payload_binary)
@@ -39,7 +39,7 @@ local function send_tunnel_msg(mav_channel, payload_binary)
         full_payload
     )
 
-    mavlink:send_chan(mav_channel, MAV_TUNNEL_ID, packed_msg)
+    return mavlink:send_chan(mav_channel, MAV_TUNNEL_ID, packed_msg)
 end
 
 local function extract_tunnel_data(raw_string)
@@ -83,7 +83,7 @@ local function handle_tunnel_msg(payload_type, payload_buffer, payload_length, t
         local status, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, next_pos = pcall(string.unpack, "<BBBBBBBBBB", payload_buffer)
 
         if status then
-            gcs:send_text(6, string.format("recvd Hex: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
+            gcs:send_text(6, string.format("recvd " .. tostring(payload_length) .. " bytes: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
                 b1, b2, b3, b4, b5, b6, b7, b8, b9, b10))
         else
             gcs:send_text(7, "Unpack failed - payload too short?")
@@ -93,15 +93,19 @@ local function handle_tunnel_msg(payload_type, payload_buffer, payload_length, t
     end
 end
 
+local data_buffer = string.pack("<ff", 12.34, 56.78)
+
 local function loop()
     local byte_data, chan, recv_time = mavlink:receive_chan()
 
-    local data_buffer = string.pack("<ff", 12.34, 56.78)
     send_tunnel_msg(chan, data_buffer)
     -- gcs:send_text('7', 'sent echo back to mission')
 
     if byte_data ~= nil then
-        handle_tunnel_msg(extract_tunnel_data(byte_data))
+        local payload_type, payload_buffer, payload_length, target_system, target_component = extract_tunnel_data(byte_data)
+        handle_tunnel_msg(payload_type, payload_buffer, payload_length, target_system, target_component)
+
+        -- data_buffer = payload_buffer
     else
         -- gcs:send_text('7', "no msg recvd")
     end
