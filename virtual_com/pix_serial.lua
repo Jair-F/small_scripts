@@ -1,19 +1,19 @@
 
-local PAYLOAD_CUSTOM_ID = 40002
+local TUNNEL_PAYLOAD_CUSTOM_ID = 40002
 local TARGET_SYSTEM = param:get("MAV_GCS_SYSID") -- gcs Station
 local TARGET_COMPONENT = param:get("MAV_SYSID") -- autopilot
-local MAV_TUNNEL_ID = 385 -- https://mavlink.io/en/messages/common.html#TUNNEL
+local MAV_TUNNEL_MSG_ID = 385 -- https://mavlink.io/en/messages/common.html#TUNNEL
 
 
 local function send_tunnel_msg(mav_channel, payload_binary)
     if mav_channel == nil then
-       return 
+       return
     end
 
     local MAV_TUNNEL_ID = 385 -- https://mavlink.io/en/messages/common.html#TUNNEL
     local target_system = TARGET_SYSTEM
     local target_component = TARGET_COMPONENT
-    local payload_type = PAYLOAD_CUSTOM_ID
+    local payload_type = TUNNEL_PAYLOAD_CUSTOM_ID
 
     local payload_len = #payload_binary
 
@@ -44,7 +44,7 @@ end
 local function extract_tunnel_data(raw_string)
     if not raw_string or #raw_string < 15 then return nil end
 
-    local tunnel_id_bin = string.pack("<I3", MAV_TUNNEL_ID) -- little endian 3byte(24 bit integer)
+    local tunnel_id_bin = string.pack("<I3", MAV_TUNNEL_MSG_ID) -- little endian 3byte(24 bit integer)
     -- FIND THE PAYLOAD START
     local start_idx = raw_string:find(tunnel_id_bin)
 
@@ -55,16 +55,14 @@ local function extract_tunnel_data(raw_string)
     -- The payload starts 3 bytes after the start of the Message ID
     local message_payload = raw_string:sub(start_idx + 3)
 
-    -- EXACT LAYOUT FROM YOUR DOCS:
+    -- PHYSICAL WIRE ORDER (Sorted by byte size):
+    -- H (uint16): payload_type
     -- B (uint8):  target_system
     -- B (uint8):  target_component
-    -- H (uint16): payload_type
     -- B (uint8):  payload_length
     -- c128 (bytes): payload
-    local target_system, target_component, payload_type, payload_length,
-        payload_buffer = string.unpack("<BBHBc128", message_payload)
-
-    -- payload_buffer = string.sub(payload_buffer, 1, payload_length) -- convert to valid string
+    local payload_type, target_system, target_component, payload_length,
+          payload_buffer = string.unpack("<HBBBc128", message_payload)
 
     return payload_type, payload_buffer, payload_length, target_system, target_component
 end
@@ -74,11 +72,11 @@ local function handle_tunnel_msg(payload_type, payload_buffer, payload_length, t
         gcs:send_text('7', 'recvd empty tunnel payload')
     end
 
-    gcs:send_text('7', 'type: ' .. tostring(payload_type))
-    gcs:send_text('7', 'length: ' .. tostring(payload_length))
-    gcs:send_text('7', 'target_system: ' .. tostring(target_system))
-    gcs:send_text('7', 'target_component: ' .. tostring(target_component))
-    if payload_type == PAYLOAD_CUSTOM_ID then
+    -- gcs:send_text('7', 'type: ' .. tostring(payload_type))
+    -- gcs:send_text('7', 'length: ' .. tostring(payload_length))
+    -- gcs:send_text('7', 'target_system: ' .. tostring(target_system))
+    -- gcs:send_text('7', 'target_component: ' .. tostring(target_component))
+    if payload_type == TUNNEL_PAYLOAD_CUSTOM_ID then
         gcs:send_text(7, "payload len: " .. tostring(payload_length))
 
         local status, b1, b2, b3, b4, b5, b6, b7, next_pos = pcall(string.unpack, "<BBBBBBB", payload_buffer)
@@ -94,26 +92,28 @@ local function handle_tunnel_msg(payload_type, payload_buffer, payload_length, t
 end
 
 local function loop()
-    gcs:send_text('7', "getting mavlink channel")
     local byte_data, chan, recv_time = mavlink:receive_chan()
 
     local data_buffer = string.pack("<ff", 12.34, 56.78)
     send_tunnel_msg(chan, data_buffer)
 
-    if byte_data == nil then
-        gcs:send_text('7', "failed to recv msg")
-        return loop, 1000
+    if byte_data ~= nil then
+        handle_tunnel_msg(extract_tunnel_data(byte_data))
+    else
+        -- gcs:send_text('7', "no msg recvd")
     end
 
-    handle_tunnel_msg(extract_tunnel_data(byte_data))
-
-    return loop, 1000
+    return loop, 1
 end
 
 local function startup()
+    local NUM_OF_MSGS_TO_REGISTER = 1
+    local LOCAL_MSGS_BUFFER = 10 -- max 25
+
     gcs:send_text('7', "startup")
-    mavlink:init(10, 1)
-    mavlink:register_rx_msgid(MAV_TUNNEL_ID)
+
+    mavlink:init(LOCAL_MSGS_BUFFER, NUM_OF_MSGS_TO_REGISTER)
+    mavlink:register_rx_msgid(MAV_TUNNEL_MSG_ID)
     return loop()
 end
 

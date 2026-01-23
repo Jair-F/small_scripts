@@ -4,11 +4,11 @@ import serial
 import os
 from pymavlink import mavutil
 
-MAV_CUSOMT_PAYLOAD_TYPE = 40002
+MAV_CUSTOM_PAYLOAD_TYPE = 40002
 
 def recv_mav_tunnel(mav_connection) -> bytes:
     msg = mav_connection.recv_match(type='TUNNEL', blocking=True)
-    if msg.payload_type == MAV_CUSOMT_PAYLOAD_TYPE:
+    if msg.payload_type == MAV_CUSTOM_PAYLOAD_TYPE:
         raw_data = msg.payload
         actual_data = raw_data[:msg.payload_length]
         return actual_data
@@ -25,17 +25,19 @@ def send_mav_tunnel(mav_connection, payload):
         mav_connection.mav.tunnel_send(
             target_system=mav_connection.target_system,
             target_component=mav_connection.target_component,
-            payload_type=MAV_CUSOMT_PAYLOAD_TYPE,
+            payload_type=MAV_CUSTOM_PAYLOAD_TYPE,
             payload_length=length,
             payload=padded_payload
         )
-        print(f"Sent {length} bytes with payload type {MAV_CUSOMT_PAYLOAD_TYPE}")
+        print(f"Sent {length} bytes with payload type {MAV_CUSTOM_PAYLOAD_TYPE}")
 
 
 def setupMavlink():
     connection = mavutil.mavlink_connection('udpin:127.0.0.1:14551')
     print("Waiting for heartbeat from drone...")
     connection.wait_heartbeat()
+    print(F"mavlink target_system: {connection.target_system}")
+    print(F"mavlink target_component: {connection.target_component}")
     print(f"Heartbeat received from System {connection.target_system}")
 
     while True:
