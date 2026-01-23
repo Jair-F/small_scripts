@@ -28,7 +28,8 @@ local function send_tunnel_msg(mav_channel, payload_binary)
     -- B    : uint8  (target_component)
     -- B    : uint8  (payload_length)
     -- c128 : 128 fixed-length characters (the payload)
-    local packed_msg = string.pack('<HBBBc128',
+    local format = '<HBBBc' .. tostring(#full_payload)
+    local packed_msg = string.pack(format,
         payload_type,
         target_system,
         target_component,
