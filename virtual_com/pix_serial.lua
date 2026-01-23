@@ -39,16 +39,16 @@ local function send_tunnel_msg(mav_channel, payload_binary)
 
     mavlink:send_chan(mav_channel, MAV_TUNNEL_ID, packed_msg)
 end
+
 local function extract_tunnel_data(raw_string)
     if not raw_string or #raw_string < 15 then return nil end
 
+    local tunnel_id_bin = string.pack("<I3", MAV_TUNNEL_ID) -- little endian 3byte(24 bit integer)
     -- FIND THE PAYLOAD START
-    -- The Message ID for TUNNEL (385) in hex is 0x000181
-    -- In the wire stream, this appears as 81 01 00
-    local start_idx = raw_string:find("\129\1\0") 
+    local start_idx = raw_string:find(tunnel_id_bin)
 
     if not start_idx then
-        return nil -- Message ID not found in this packet
+        return nil -- not a tunnel msg
     end
 
     -- The payload starts 3 bytes after the start of the Message ID
@@ -60,13 +60,12 @@ local function extract_tunnel_data(raw_string)
     -- H (uint16): payload_type
     -- B (uint8):  payload_length
     -- c128 (bytes): payload
-    local target_sys, target_comp, p_type, p_len, p_buffer = string.unpack("<BBHBc128", message_payload)
+    local target_sys, target_comp, payload_type, payload_length,
+        payload_buffer = string.unpack("<BBHBc128", message_payload)
 
-    -- Extract valid data
-    local actual_payload = p_buffer
-    -- local actual_payload = string.sub(p_buffer, 1, p_len)
+    -- payload_buffer = string.sub(payload_buffer, 1, payload_length) -- convert to valid string
 
-    return p_type, actual_payload, p_len, target_sys, target_comp
+    return payload_type, payload_buffer, payload_length, target_sys, target_comp
 end
 
 local function update()
