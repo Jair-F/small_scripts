@@ -11,8 +11,6 @@ def recv_mav_tunnel(mav_connection) -> bytes:
     if msg.payload_type == MAV_CUSOMT_PAYLOAD_TYPE:
         raw_data = msg.payload
         actual_data = raw_data[:msg.payload_length]
-        print(f"Received Custom Packet! Length: {msg.payload_length}")
-        print(f"Data: {actual_data.hex()}")
         return actual_data
 
 def send_mav_tunnel(mav_connection, payload):
@@ -42,7 +40,9 @@ def setupMavlink():
 
     while True:
         send_mav_tunnel(connection, b'\x01\x02\x03\x04\x05\x06')
-        # print(recv_mav_tunnel(connection).hex())
+        recv_data = recv_mav_tunnel(connection)
+        # print(type(recv_data))
+        print(F"data: {recv_data}")
         time.sleep(0.1)
 
 if __name__ == "__main__":

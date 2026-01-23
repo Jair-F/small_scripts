@@ -7,7 +7,7 @@ local MAV_TUNNEL_ID = 385
 local function send_tunnel_msg(chan)
     local target_system = 255
     local target_component = 1
-    local payload_type = 40001
+    local payload_type = PAYLOAD_CUSTOM_ID
 
     -- 2. Create the data payload (binary string)
     -- Pack two floats (8 bytes total)
@@ -70,7 +70,8 @@ end
 local function update()
     gcs:send_text('7', "trying to receive mavlink msg")
     local raw_data, chan, recv_time = mavlink:receive_chan()
-    -- send_tunnel_msg(chan)
+    gcs:send_text('7', 'chan:' .. tostring(chan))
+    send_tunnel_msg(0)
 
     if raw_data == nil then
         gcs:send_text('7', "msg is nil")
