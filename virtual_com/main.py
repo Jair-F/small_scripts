@@ -5,15 +5,14 @@ import os
 from pymavlink import mavutil
 
 PYTHON_SIDE = "COM100"
-USER_SIDE = "COM101"
+USER_SIDE = "COM200"
 COM0COM_PATH = r"C:\Program Files (x86)\com0com\setupc.exe"
-MAV_CUSOMT_PAYLOAD_TYPE = 40001
 
 '''
     https://freevirtualserialports.com/
     https://com0com.sourceforge.net/
 '''
-def setup_port_bridge():
+def setup_port_bridge() -> bool:
     if not os.path.exists(COM0COM_PATH):
         print("Driver not found!")
         return False
