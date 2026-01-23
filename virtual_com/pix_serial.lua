@@ -3,6 +3,7 @@ local TUNNEL_PAYLOAD_CUSTOM_ID = 40002
 local TARGET_SYSTEM = param:get("MAV_GCS_SYSID") -- gcs Station
 local TARGET_COMPONENT = param:get("MAV_SYSID") -- autopilot
 local MAV_TUNNEL_MSG_ID = 385 -- https://mavlink.io/en/messages/common.html#TUNNEL
+local LOOP_RATE = 100
 
 
 local function send_tunnel_msg(mav_channel, payload_binary)
@@ -77,12 +78,13 @@ local function handle_tunnel_msg(payload_type, payload_buffer, payload_length, t
     -- gcs:send_text('7', 'target_system: ' .. tostring(target_system))
     -- gcs:send_text('7', 'target_component: ' .. tostring(target_component))
     if payload_type == TUNNEL_PAYLOAD_CUSTOM_ID then
-        gcs:send_text(7, "payload len: " .. tostring(payload_length))
+        -- gcs:send_text(7, "payload len: " .. tostring(payload_length))
 
-        local status, b1, b2, b3, b4, b5, b6, b7, next_pos = pcall(string.unpack, "<BBBBBBB", payload_buffer)
+        local status, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, next_pos = pcall(string.unpack, "<BBBBBBBBBB", payload_buffer)
 
         if status then
-            gcs:send_text(6, string.format("Hex: %02X %02X %02X %02X %02X %02X %02X", b1, b2, b3, b4, b5, b6, b7))
+            gcs:send_text(6, string.format("recvd Hex: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
+                b1, b2, b3, b4, b5, b6, b7, b8, b9, b10))
         else
             gcs:send_text(7, "Unpack failed - payload too short?")
         end
@@ -96,6 +98,7 @@ local function loop()
 
     local data_buffer = string.pack("<ff", 12.34, 56.78)
     send_tunnel_msg(chan, data_buffer)
+    -- gcs:send_text('7', 'sent echo back to mission')
 
     if byte_data ~= nil then
         handle_tunnel_msg(extract_tunnel_data(byte_data))
@@ -103,7 +106,7 @@ local function loop()
         -- gcs:send_text('7', "no msg recvd")
     end
 
-    return loop, 1
+    return loop, LOOP_RATE
 end
 
 local function startup()
