@@ -8,15 +8,15 @@ from pymavlink import mavutil
 MAV_CUSTOM_PAYLOAD_TYPE = 40002
 MAV_CONNECTION = 'udpin:127.0.0.1:14551'
 
-def mav_tunnel_recv(mav_connection, custom_payload_type:int, blocking:bool = True) -> bytes | None:
+def mav_tunnel_recv(mav_connection, blocking:bool = True) -> bytes | None:
     msg = mav_connection.recv_match(type='TUNNEL', blocking=blocking)
     if not msg:
         return None
 
-    if msg.payload_type == custom_payload_type:
-        raw_data = msg.payload
-        payload_bytes:bytes = raw_data[:msg.payload_length]
-        return payload_bytes
+    raw_data = msg.payload
+    payload_bytes:bytes = raw_data[:msg.payload_length]
+    return msg.payload_type, payload_bytes
+
 
 def mav_tunnel_send(mav_connection, payload: bytes, custom_payload_type: int) -> bool:
     if not mav_connection:
@@ -54,8 +54,8 @@ def setupMavlink():
 
         if mav_tunnel_send(connection, rand_bytes, MAV_CUSTOM_PAYLOAD_TYPE):
             print(f"Sent bytes with payload with tunnel custom payload {MAV_CUSTOM_PAYLOAD_TYPE}")
-        recv_data = mav_tunnel_recv(connection, MAV_CUSTOM_PAYLOAD_TYPE)
-        print(F"data: {recv_data}")
+        payload_type, recv_data = mav_tunnel_recv(connection)
+        print(F"data: {payload_type} {recv_data}")
         # time.sleep(0.01)
 
 if __name__ == "__main__":
