@@ -50,13 +50,15 @@ def setupMavlink():
     print(f"Heartbeat received from System {connection.target_system}")
 
     while True:
-        rand_bytes = random.randbytes(10)
+        # rand_bytes = random.randbytes(128)
+        number = 255
+        rand_bytes = number.to_bytes(2, 'little')
 
         if mav_tunnel_send(connection, rand_bytes, MAV_CUSTOM_PAYLOAD_TYPE):
-            print(f"Sent bytes with payload with tunnel custom payload {MAV_CUSTOM_PAYLOAD_TYPE}")
+            print(f"Sent {len(rand_bytes)} bytes with payload with tunnel custom payload {MAV_CUSTOM_PAYLOAD_TYPE}")
         payload_type, recv_data = mav_tunnel_recv(connection)
         print(F"data: {payload_type} {recv_data}")
-        # time.sleep(0.01)
+        time.sleep(0.5)
 
 if __name__ == "__main__":
     setupMavlink()
