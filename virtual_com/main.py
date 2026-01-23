@@ -42,8 +42,13 @@ if __name__ == "__main__":
     if setup_port_bridge():
         try:
             ser = serial.Serial(PYTHON_SIDE, 9600)
+
             while True:
                 ser.write(b"Hello Arduino from python\n")
+
+                if ser.in_waiting > 0:
+                    print(ser.readline())
+
                 time.sleep(1)
         except Exception as e:
             print(e)
