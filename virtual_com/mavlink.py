@@ -1,3 +1,4 @@
+import random
 import subprocess
 import time
 import serial
@@ -5,35 +6,43 @@ import os
 from pymavlink import mavutil
 
 MAV_CUSTOM_PAYLOAD_TYPE = 40002
+MAV_CONNECTION = 'udpin:127.0.0.1:14551'
 
-def recv_mav_tunnel(mav_connection) -> bytes:
-    msg = mav_connection.recv_match(type='TUNNEL', blocking=True)
-    if msg.payload_type == MAV_CUSTOM_PAYLOAD_TYPE:
+def mav_tunnel_recv(mav_connection, custom_payload_type:int, blocking:bool = True) -> bytes | None:
+    msg = mav_connection.recv_match(type='TUNNEL', blocking=blocking)
+    if not msg:
+        return None
+
+    if msg.payload_type == custom_payload_type:
         raw_data = msg.payload
-        actual_data = raw_data[:msg.payload_length]
-        return actual_data
+        payload_bytes:bytes = raw_data[:msg.payload_length]
+        return payload_bytes
 
-def send_mav_tunnel(mav_connection, payload):
-        MAV_TUNNEL_MAX_PAYLOAD_SIZE = 128
-        if len(payload) > MAV_TUNNEL_MAX_PAYLOAD_SIZE:
-            raise ValueError('Payload too large! Maximum 128 bytes.')
+def mav_tunnel_send(mav_connection, payload: bytes, custom_payload_type: int) -> bool:
+    if not mav_connection:
+        return False
 
-        length = len(payload)
-        # Pad the payload to 128 bytes if necessary (required by some dialects)
-        padded_payload = payload.ljust(128, b'\0')
+    MAV_TUNNEL_MAX_PAYLOAD_SIZE = 128
+    if len(payload) > MAV_TUNNEL_MAX_PAYLOAD_SIZE:
+        raise ValueError('Payload too large! Maximum 128 bytes.')
 
-        mav_connection.mav.tunnel_send(
-            target_system=mav_connection.target_system,
-            target_component=mav_connection.target_component,
-            payload_type=MAV_CUSTOM_PAYLOAD_TYPE,
-            payload_length=length,
-            payload=padded_payload
-        )
-        print(f"Sent {length} bytes with payload type {MAV_CUSTOM_PAYLOAD_TYPE}")
+    length = len(payload)
+    # Pad the payload to 128 bytes with 0 - mavlink2 zero truncating
+    padded_payload = payload.ljust(MAV_TUNNEL_MAX_PAYLOAD_SIZE, b'\0')
+
+    mav_connection.mav.tunnel_send(
+        target_system=mav_connection.target_system,
+        target_component=mav_connection.target_component,
+        payload_type=custom_payload_type,
+        payload_length=length,
+        payload=padded_payload
+    )
+
+    return True
 
 
 def setupMavlink():
-    connection = mavutil.mavlink_connection('udpin:127.0.0.1:14551')
+    connection = mavutil.mavlink_connection(MAV_CONNECTION)
     print("Waiting for heartbeat from drone...")
     connection.wait_heartbeat()
     print(F"mavlink target_system: {connection.target_system}")
@@ -41,11 +50,13 @@ def setupMavlink():
     print(f"Heartbeat received from System {connection.target_system}")
 
     while True:
-        send_mav_tunnel(connection, b'\x01\x02\x03\x04\x05\x06')
-        recv_data = recv_mav_tunnel(connection)
-        # print(type(recv_data))
+        rand_bytes = random.randbytes(10)
+
+        if mav_tunnel_send(connection, rand_bytes, MAV_CUSTOM_PAYLOAD_TYPE):
+            print(f"Sent bytes with payload with tunnel custom payload {MAV_CUSTOM_PAYLOAD_TYPE}")
+        recv_data = mav_tunnel_recv(connection, MAV_CUSTOM_PAYLOAD_TYPE)
         print(F"data: {recv_data}")
-        time.sleep(0.1)
+        # time.sleep(0.01)
 
 if __name__ == "__main__":
     setupMavlink()
