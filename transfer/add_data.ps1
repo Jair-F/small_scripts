@@ -34,36 +34,45 @@ if (-not (Test-Path -Path $InputFile -PathType Leaf)) {
     exit 1
 }
 
-[long]$bytesToWrite = [long]$NumOfKBytes * 1024
+# Pad number with leading zero if less than 10
+if ($NumOfKBytes -lt 10) {
+    $paddedNum = "0$NumOfKBytes"
+} else {
+    $paddedNum = $NumOfKBytes.ToString()
+}
 
 # Create a temporary file in the user's temp folder
 $tempFile = [System.IO.Path]::Combine($env:TEMP, ([System.IO.Path]::GetRandomFileName() + '.bin'))
 
 try {
     $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    
+    # Write 32 bytes of random data (magic bits)
+    $magicBytes = New-Object byte[] 32
+    $rng.GetBytes($magicBytes)
+    [System.IO.File]::WriteAllBytes($tempFile, $magicBytes)
+    
+    # Append the padded number + newline
+    $numBytes = [System.Text.Encoding]::ASCII.GetBytes("$paddedNum`n")
+    $fsTemp = [System.IO.File]::Open($tempFile, [System.IO.FileMode]::Append, [System.IO.FileAccess]::Write)
+    try { $fsTemp.Write($numBytes, 0, $numBytes.Length) } finally { $fsTemp.Close() }
+    
+    # Append the random data
     try {
-        $remaining = $bytesToWrite
+        [long]$remaining = [long]$NumOfKBytes * 1024
         while ($remaining -gt 0) {
             $chunkSize = [int]([System.Math]::Min(65536, $remaining))
             $buffer = New-Object byte[] $chunkSize
             $rng.GetBytes($buffer)
-            [System.IO.File]::WriteAllBytes($tempFile, $buffer) -or $false
-            # Append the chunk to the temp file to avoid loading large data into memory
-            if ($remaining -eq $bytesToWrite) {
-                # First chunk: create file
-                [System.IO.File]::WriteAllBytes($tempFile, $buffer)
-            } else {
-                $fsTemp = [System.IO.File]::Open($tempFile, [System.IO.FileMode]::Append, [System.IO.FileAccess]::Write)
-                try { $fsTemp.Write($buffer, 0, $buffer.Length) } finally { $fsTemp.Close() }
-            }
-
+            $fsTemp = [System.IO.File]::Open($tempFile, [System.IO.FileMode]::Append, [System.IO.FileAccess]::Write)
+            try { $fsTemp.Write($buffer, 0, $buffer.Length) } finally { $fsTemp.Close() }
             $remaining -= $chunkSize
         }
     } finally {
         $rng.Dispose()
     }
 
-    # Now concatenate temp file + input file into output file using streams
+    # Concatenate temp file + input file into output file
     $outStream = [System.IO.File]::Open($OutputFile, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write)
     try {
         foreach ($source in @($tempFile, $InputFile)) {

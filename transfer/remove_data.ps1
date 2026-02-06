@@ -8,24 +8,15 @@ Param(
 
 if (-not $InputFile) {
     $InputFile = Read-Host -Prompt 'Input File'
-    $numPrompt = Read-Host -Prompt 'Num of KB to remove (empty=4)'
-    if ($numPrompt -ne '') {
-        try {
-            $NumOfKBytes = [int]$numPrompt
-        } catch {
-            Write-Error "Invalid number: $numPrompt"
-            exit 2
-        }
-    }
-}
-
-if (-not $NumOfKBytes) {
-    $NumOfKBytes = 4
-    Write-Host "going with default bytes to remove: $NumOfKBytes kb"
 }
 
 # Remove any single or double quotes anywhere in the string
 $InputFile = $InputFile -replace '"', '' -replace "'", ''
+
+if (-not (Test-Path -Path $InputFile -PathType Leaf)) {
+    Write-Error "Input file '$InputFile' not found."
+    exit 1
+}
 
 # Remove trailing .bin (case-insensitive)
 if ($InputFile.ToLower().EndsWith('.bin')) {
@@ -34,12 +25,34 @@ if ($InputFile.ToLower().EndsWith('.bin')) {
     $OutputFile = $InputFile
 }
 
-if (-not (Test-Path -Path $InputFile -PathType Leaf)) {
-    Write-Error "Input file '$InputFile' not found."
+# Read 2 bytes at offset 32 to get the number
+try {
+    $inStream = [System.IO.File]::OpenRead($InputFile)
+    try {
+        $null = $inStream.Seek(32, [System.IO.SeekOrigin]::Begin)
+        $buffer = New-Object byte[] 2
+        $read = $inStream.Read($buffer, 0, 2)
+        if ($read -ne 2) {
+            Write-Error "Could not read 2 bytes at offset 32"
+            exit 1
+        }
+        $numString = [System.Text.Encoding]::ASCII.GetString($buffer)
+        # Extract only digits from the 2 bytes
+        $NumOfKBytes = [int]($numString -replace '[^0-9]', '')
+        if ($NumOfKBytes -eq 0 -and -not ($numString -match '[0-9]')) {
+            Write-Error "Error: Could not find a valid number at offset 32"
+            exit 1
+        }
+    } finally {
+        $inStream.Close()
+    }
+} catch {
+    Write-Error "Failed to read from input file: $_"
     exit 1
 }
 
-[long]$bytesToSkip = [long]$NumOfKBytes * 1024
+# Calculate bytes to skip: random_data (32) + number_string (3) + actual data (NUM_OF_KBYTES * 1024)
+[long]$bytesToSkip = ([long]$NumOfKBytes * 1024) + 32 + 3
 
 try {
     $inStream = [System.IO.File]::OpenRead($InputFile)
