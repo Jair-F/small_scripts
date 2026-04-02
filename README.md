@@ -2,46 +2,9 @@
 
 Add random data before a file to bypass signatures, then remove it later to restore the original.
 
-## Linux Usage
-
-<details open>
-<summary>Linux</summary>
-
-  <details open>
-  <summary>Interactive</summary>
-
-  **Add data:**
-  ```bash
-  curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/add_data.sh | bash
-  ```
-
-  **Remove data:**
-  ```bash
-  curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/remove_data.sh | bash
-  ```
-
-  </details>
-
-  <details>
-  <summary>With Parameters</summary>
-
-  **Add data:**
-  ```bash
-  curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/add_data.sh | bash -s myfile.pdf 8
-  ```
-
-  **Remove data:**
-  ```bash
-  curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/remove_data.sh | bash -s myfile.pdf.bin
-  ```
-
-  </details>
-
-</details>
-
 ## Windows Usage
 
-<details>
+<details open>
 <summary>Windows</summary>
 
   **Enable script execution:**
@@ -80,5 +43,44 @@ Add random data before a file to bypass signatures, then remove it later to rest
   </details>
 
 </details>
+
+
+## Linux Usage
+
+<details open>
+<summary>Linux</summary>
+
+  <details open>
+  <summary>Interactive</summary>
+
+  **Add data:**
+  ```bash
+  curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/add_data.sh | bash
+  ```
+
+  **Remove data:**
+  ```bash
+  curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/remove_data.sh | bash
+  ```
+
+  </details>
+
+  <details>
+  <summary>With Parameters</summary>
+
+  **Add data:**
+  ```bash
+  curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/add_data.sh | bash -s myfile.pdf 8
+  ```
+
+  **Remove data:**
+  ```bash
+  curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/transfer/remove_data.sh | bash -s myfile.pdf.bin
+  ```
+
+  </details>
+
+</details>
+
 
 **Notes:** Max 99 KB per operation (Linux). Output: `.bin` from add_data, original name from remove_data.
