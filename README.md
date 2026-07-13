@@ -88,5 +88,5 @@ Add random data before a file to bypass signatures, then remove it later to rest
 ## Setup CA
   **install:**
   ```bash
-  curl -sL https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/setup_ca.sh | bash
+  wget -qO- https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/setup_ca.sh | bash
   ```
