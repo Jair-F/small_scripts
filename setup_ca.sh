@@ -7,7 +7,7 @@ install_programs() {
 
     snap install --classic code
     apt update
-    apt install -y git wget curl docker.io docker-compose-v2 docker-buildx mono-complete
+    apt install -y git wget curl docker.io docker-compose-v2 docker-buildx mono-complete python3 python3-pip
     usermod -aG docker $CURRENT_USER
     chmod 666 /var/run/docker.sock
 }
