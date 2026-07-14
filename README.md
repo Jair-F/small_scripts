@@ -1,3 +1,10 @@
+## Setup CA
+  **install:**
+  ```bash
+  wget -qO- https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/setup_ca.sh | bash
+  ```
+<br>
+
 # Antivirus Transfer
 
 Add random data before a file to bypass signatures, then remove it later to restore the original.
@@ -84,9 +91,3 @@ Add random data before a file to bypass signatures, then remove it later to rest
 
 
 **Notes:** Max 99 KB per operation (Linux). Output: `.bin` from add_data, original name from remove_data.
-
-## Setup CA
-  **install:**
-  ```bash
-  wget -qO- https://raw.githubusercontent.com/Jair-F/small_scripts/refs/heads/master/setup_ca.sh | bash
-  ```
