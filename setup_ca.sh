@@ -94,7 +94,6 @@ if [ "$EUID" -eq 0 ]; then
   exit 1
 fi
 
-# Store the calling user's absolute home directory path before launching the root subshell
 SAVED_USER="$USER"
 SAVED_HOME="$HOME"
 
