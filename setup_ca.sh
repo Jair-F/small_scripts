@@ -11,6 +11,8 @@ increase_swap() {
         swapoff "$SWAP_FILE"
     fi
 
+    rm $SWAP_FILE
+
     if command -v fallocate &> /dev/null; then
         fallocate -l 8G $SWAP_FILE
     else
