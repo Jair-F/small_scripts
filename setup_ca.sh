@@ -47,7 +47,8 @@ add_remove_dock_apps() {
         'org.gnome.Settings.desktop',
         'code_code.desktop',
         'org.gnome.SystemMonitor.desktop',
-        'gparted.desktop'
+        'gparted.desktop',
+        'org.gnome.TextEditor.desktop'
     ]"
 
     echo "Updated Gnome Apps: $(gsettings get org.gnome.shell favorite-apps)"
