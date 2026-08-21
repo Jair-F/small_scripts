@@ -39,9 +39,11 @@ install_programs() {
     chmod 666 /var/run/docker.sock
 }
 
-add_remove_dock_apps() {
-    echo "Current Gnome Apps: $(gsettings get org.gnome.shell favorite-apps)"
+change_gnome_settings() {
+    # dark_mode: 'prefer-dark', light mode: 'default'
+    gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 
+    echo "Current Gnome Apps: $(gsettings get org.gnome.shell favorite-apps)"
     gsettings set org.gnome.shell favorite-apps "[
         'firefox_firefox.desktop',
         'org.gnome.Nautilus.desktop',
@@ -52,7 +54,6 @@ add_remove_dock_apps() {
         'gparted.desktop',
         'org.gnome.TextEditor.desktop'
     ]"
-
     echo "Updated Gnome Apps: $(gsettings get org.gnome.shell favorite-apps)"
 }
 
@@ -107,7 +108,7 @@ code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-python.python
 code --install-extension PKief.material-icon-theme
 
-add_remove_dock_apps
+change_gnome_settings
 vscode_default_settings "$SAVED_HOME"
 
 echo "=== Setup complete! ==="
