@@ -88,12 +88,12 @@ vscode_default_settings() {
 }
 
 setup_sudo_without_password() {
-    sudo tee /etc/sudoers.d/90-hz_ubuntu_users << 'EOF'
+    tee /etc/sudoers.d/90-hz_ubuntu_users << 'EOF'
 %hz_ubuntu_users ALL=(ALL:ALL) NOPASSWD: ALL
 EOF
 
-    sudo chmod 0440 /etc/sudoers.d/90-hz_ubuntu_users
-    sudo chown root:root /etc/sudoers.d/90-hz_ubuntu_users
+    chmod 0440 /etc/sudoers.d/90-hz_ubuntu_users
+    chown root:root /etc/sudoers.d/90-hz_ubuntu_users
 }
 
 setup_git_username_email() {
