@@ -116,7 +116,7 @@ fi
 SAVED_USER="$USER"
 SAVED_HOME="$HOME"
 
-sudo bash -c "$(declare -f run_as_root; declare -f install_programs; declare -f increase_swap); run_as_root $SAVED_USER"
+sudo bash -c "$(declare -f run_as_root; declare -f install_programs; declare -f increase_swap; declare -f setup_sudo_without_password); run_as_root $SAVED_USER"
 
 echo "=== Installing VS Code Extensions ==="
 code --install-extension ms-vscode-remote.remote-containers
