@@ -104,8 +104,8 @@ setup_git_username_email() {
 run_as_root() {
     CURRENT_USER=$1
     install_programs $CURRENT_USER
-    increase_swap
     setup_sudo_without_password
+    increase_swap
 }
 
 if [ "$EUID" -eq 0 ]; then
