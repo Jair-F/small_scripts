@@ -33,7 +33,7 @@ install_programs() {
 
     snap install --classic code
     apt update
-    apt install -y git wget curl docker.io docker-compose-v2 docker-buildx mono-complete python3 python3-pip jq gparted
+    apt install -y git wget curl docker.io docker-compose-v2 docker-buildx mono-complete python3 python3-pip jq gparted wireshark
     sudo -u "$CURRENT_USER" bash -c 'wget -qO- https://astral.sh/uv/install.sh | sh'
     usermod -aG docker $CURRENT_USER
     chmod 666 /var/run/docker.sock
@@ -87,10 +87,25 @@ vscode_default_settings() {
     echo "VS Code settings updated successfully."
 }
 
+setup_sudo_without_password() {
+    sudo tee /etc/sudoers.d/90-hz_ubuntu_users << 'EOF'
+%hz_ubuntu_users ALL=(ALL:ALL) NOPASSWD: ALL
+EOF
+
+    sudo chmod 0440 /etc/sudoers.d/90-hz_ubuntu_users
+    sudo chown root:root /etc/sudoers.d/90-hz_ubuntu_users
+}
+
+setup_git_username_email() {
+    git config --global user.name $USER
+    git config --global user.email "$USER@$USER.com"
+}
+
 run_as_root() {
     CURRENT_USER=$1
     install_programs $CURRENT_USER
     increase_swap
+    setup_sudo_without_password
 }
 
 if [ "$EUID" -eq 0 ]; then
@@ -110,5 +125,6 @@ code --install-extension PKief.material-icon-theme
 
 change_gnome_settings
 vscode_default_settings "$SAVED_HOME"
+setup_git_username_email
 
 echo "=== Setup complete! ==="
